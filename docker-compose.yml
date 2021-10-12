@@ -11,15 +11,15 @@ services:
       - UPLOAD_FOLDER=/var/uploads
       - DATABASE_URL=mysql+pymysql://ctfd:ctfd@db/ctfd
       - REDIS_URL=redis://cache:6379
-      - WORKERS=1
+      - WORKERS=10
       - LOG_FOLDER=/var/log/CTFd
       - ACCESS_LOG=-
       - ERROR_LOG=-
       - REVERSE_PROXY=true
     volumes:
-      - .data/CTFd/logs:/var/log/CTFd
-      - .data/CTFd/uploads:/var/uploads
-      - .:/opt/CTFd:ro
+      - .data/CTFd/logs:/var/log/CTFd:z
+      - .data/CTFd/uploads:/var/uploads:z
+      - .:/opt/CTFd:z
     depends_on:
       - db
     networks:
@@ -30,7 +30,7 @@ services:
     image: nginx:1.17
     restart: always
     volumes:
-      - ./conf/nginx/http.conf:/etc/nginx/nginx.conf
+      - ./conf/nginx/http.conf:/etc/nginx/nginx.conf:z
     ports:
       - 80:80
     depends_on:
@@ -45,17 +45,17 @@ services:
       - MYSQL_PASSWORD=ctfd
       - MYSQL_DATABASE=ctfd
     volumes:
-      - .data/mysql:/var/lib/mysql
+      - .data/mysql:/var/lib/mysql:z
     networks:
         internal:
     # This command is required to set important mariadb defaults
-    command: [mysqld, --character-set-server=utf8mb4, --collation-server=utf8mb4_unicode_ci, --wait_timeout=28800, --log-warnings=0]
+    command: [mysqld, --character-set-server=utf8mb4, --collation-server=utf8mb4_unicode_ci, --wait_timeout=28800, --log-warnings=0, --bind-address=0.0.0.0]
 
   cache:
     image: redis:4
     restart: always
     volumes:
-    - .data/redis:/data
+    - .data/redis:/data:z
     networks:
         internal:
 
